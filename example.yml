@@ -1,0 +1,223 @@
+---
+options:
+  mode_switch_key: Super-KEY_BACKSLASH
+  default_mode: normal
+
+modmap:
+  CapsLock: CTRL_L
+
+modes:
+  normal:
+    groups:
+    - global
+    - bspwm
+    - utility
+    switch_key:
+      Super-KEY_MINUS
+  mouse:
+    groups:
+    - global
+    - mouse
+    - utility
+    switch_key:
+      Super-Shift-KEY_MINUS
+
+groups:
+  global:
+    notin:
+      Alacritty  # alacritty has it's own key map config
+    key_bindings:
+    - key: Alt-C
+      remap: Ctrl-C
+    - key: Alt-X
+      remap: Ctrl-X
+    - key: Alt-V
+      remap: Ctrl-V
+    - key: Alt-A
+      remap: Ctrl-A
+    - key: Ctrl-H
+      remap: KEY_LEFT
+    - key: Ctrl-J
+      remap: KEY_DOWN
+    - key: Ctrl-K
+      remap: KEY_UP
+    - key: Ctrl-L
+      remap: KEY_RIGHT
+    - key: Ctrl-H
+      remap: KEY_BACKSPACE
+    - key: Ctrl-A
+      remap: KEY_HOME
+    - key: Ctrl-E
+      remap: KEY_END
+    - key: Alt-Z
+      remap: Ctrl-Z
+    - key: Alt-Shift-Z
+      remap: Ctrl-Shift-Z
+
+  utility:
+    key_bindings:
+    - key: Super-KEY_ENTER
+      shell: alacritty
+      desc: "start terminal"
+    - key: Super-KEY_B
+      shell: firefox-nightly
+      desc: "start broswer"
+    - key: Ctrl-Alt-Q
+      shell: lock
+      desc: "lockscreen"
+    - key: Alt-Shift-KEY_4
+      shell: flameshot gui
+      desc: "screenshot"
+    - key: Super-M
+      shell: sh $HOME/.config/rofi/filemenu.sh
+      desc: "open filemanager"
+    - key: Alt-KEY_SPACE
+      shell: sh $HOME/.config/rofi/appmenu.sh
+      desc: "open rofi appmenu"
+    - key: Super-Shift-P
+      shell: sh $HOME/.config/rofi/powermenu.sh
+      desc: "open rofi powermenu"
+    - key: Super-P
+      shell: sh $HOME/.local/bin/toggle-sidebar.sh
+      desc: "toggle conky sidebar"
+    - key: Alt-P
+      shell: sh $HOME/.config/rofi/bwmenu.sh
+      desc: "open bitwarden"
+    - key: Super-O
+      shell: sh $HOME/.config/rofi/typora.sh
+      desc: "open typora"
+    - key: Super-Tab
+      shell: sh $HOME/.config/rofi/windowmenu.sh
+      desc: "open window menu"
+    - key: Super-C
+      shell: sh $HOME/.config/rofi/clipboard.sh
+      desc: "open clipboard manager"
+    - key: Super-E
+      shell: sh $HOME/.config/rofi/emacs.sh
+      desc: "open emacs"
+    - key: KEY_F12
+      shell: xfce4-terminal --drop-down --hide-menubar
+    - key: Super-d
+      shell: sh $HOME/.config/rofi/swap.sh
+      desc: "swap window"
+
+  bspwm:
+    key_bindings:
+    - key: Super-Alt-Shift-r
+      shell: bspc wm -r
+      desc: "restart bspwm"
+    - key: Super-Alt-q
+      shell: bspc quiet
+      desc: "quit bspwm"
+    - key: Super-w
+      shell: bspc node -k
+      desc: "kill the focused window"
+    - key: Super-Shift-w
+      shell: bspc node -c
+      desc: "close the focused window"
+    - key: Super-n
+      shell: bspc node -f next.local.!hidden.window
+      desc: "focus next window"
+    - key: Super-Shift-n
+      shell: bspc node -f prev.local.!hidden.window
+      desc: "focus prev window"
+
+    # For window State
+    - key: Super-t
+      shell: bspc node -t tiled
+      desc: "make window tiled"
+    - key: Super-Shift-t
+      shell: bspc node -t pseude_tiled
+      desc: "make window preudo tiled"
+    - key: Super-s
+      shell: bspc node -t floating
+      desc: "make window floating"
+    - key: Super-f
+      shell: bspc node -t fullscreen
+      desc: "make window fullscreen"
+
+
+    # For desktop switch
+    - key: Super-KEY_1
+      shell: bspc desktop -f ^1
+    - key: Super-KEY_2
+      shell: bspc desktop -f ^2
+    - key: Super-KEY_3
+      shell: bspc desktop -f ^3
+    - key: Super-KEY_4
+      shell: bspc desktop -f ^4
+    - key: Super-KEY_5
+      shell: bspc desktop -f ^5
+    - key: Super-KEY_6
+      shell: bspc desktop -f ^6
+    - key: Super-KEY_7
+      shell: bspc desktop -f ^7
+    - key: Super-KEY_8
+      shell: bspc desktop -f ^8
+    - key: Super-KEY_9
+      shell: bspc desktop -f ^9
+    - key: Ctrl-Super-h
+      shell: bspc desktop -f prev
+    - key: Ctrl-Super-l
+      shell: bspc desktop -f next
+
+    # Send node to desktop
+    - key: Super-Shift-KEY_1
+      shell: bspc node -d ^1
+    - key: Super-Shift-KEY_2
+      shell: bspc node -d ^2
+    - key: Super-Shift-KEY_3
+      shell: bspc node -d ^3
+    - key: Super-Shift-KEY_4
+      shell: bspc node -d ^4
+    - key: Super-Shift-KEY_5
+      shell: bspc node -d ^5
+    - key: Super-Shift-KEY_6
+      shell: bspc node -d ^6
+    - key: Super-Shift-KEY_7
+      shell: bspc node -d ^7
+    - key: Super-Shift-KEY_8
+      shell: bspc node -d ^8
+    - key: Super-Shift-KEY_9
+      shell: bspc node -d ^9
+
+    # Move the focused window
+    - key: Super-h
+      shell: bspc node -v -20 0
+    - key: Super-j
+      shell: bspc node -v 0 20
+    - key: Super-k
+      shell: bspc node -v 0 -20
+    - key: Super-l
+      shell: bspc node -v 20 0
+
+    # expand a window by moving one of its side outward
+    - key: Super-alt-h
+      shell: bspc node -z left -20 0
+    - key: Super-alt-j
+      shell: bspc node -z bottom 0 20
+    - key: Super-alt-k
+      shell: bspc node -z top 0 -20
+    - key: Super-alt-l
+      shell: bspc node -z right 20 0
+
+    # contract a window by moving one of its side inward
+    - key: Super-alt-shift-h
+      shell: bspc node -z right -20 0
+    - key: Super-alt-shift-j
+      shell: bspc node -z top 0 20
+    - key: Super-alt-shift-k
+      shell: bspc node -z bottom 0 -20
+    - key: Super-alt-shift-l
+      shell: bspc node -z left 20 0
+
+  mouse:
+    key_bindings:
+    - key: Super-h
+      shell: xdotool mousemove_relative -- -16 0
+    - key: Super-j
+      shell: xdotool mousemove_relative -- 0 16
+    - key: Super-k
+      shell: xdotool mousemove_relative -- 0 -16
+    - key: Super-l
+      shell: xdotool mousemove_relative -- 16 0
