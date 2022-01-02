@@ -347,9 +347,10 @@ impl DefaultEventHandler {
             }
             // Execute shell command
             Action::Shell(command) => {
-                let mut res = shlex::split(command).unwrap();
-                let args = res.split_off(1);
-                execute(res[0].clone(), args);
+                //let mut res = shlex::split(command).unwrap();
+                //let args = res.split_off(1);
+                //execute(res[0].clone(), args);
+                execute(&command);
             }
         }
         Ok(())

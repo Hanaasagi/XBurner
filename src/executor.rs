@@ -1,6 +1,3 @@
-use std::convert::AsRef;
-use std::ffi::OsStr;
-use std::iter::IntoIterator;
 use std::process::{exit, Command, Stdio};
 
 use nix::sys;
@@ -12,10 +9,10 @@ use nix::unistd;
 // The child forks a grandchild
 // The child exits
 // The grandchild is now the daemon
-pub fn execute<S, I>(program: S, args: I)
-where
-    S: AsRef<OsStr>,
-    I: IntoIterator<Item = S>,
+pub fn execute(shell: &str)
+//where
+//    S: AsRef<OsStr>,
+//    I: IntoIterator<Item = S>,
 {
     unsafe {
         match unistd::fork().expect("Failed to fork process") {
@@ -34,6 +31,7 @@ where
                 //nix::unistd::close(1);
                 //nix::unistd::close(2);
                 // Close all open file descripter
+
                 for fd in 0..unistd::sysconf(unistd::SysconfVar::OPEN_MAX)
                     .map(|m| m.unwrap_or(0))
                     .unwrap()
@@ -42,8 +40,9 @@ where
                 }
 
                 // TODO: maybe a log file
-                Command::new(program)
-                    .args(args)
+                Command::new("sh")
+                    .arg("-c")
+                    .arg(shell)
                     .stdin(Stdio::null())
                     .stdout(Stdio::null())
                     .stderr(Stdio::null())
