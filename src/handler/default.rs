@@ -157,7 +157,7 @@ impl DefaultEventHandler {
 
         let x11_client = X11Client::new()?;
 
-        Ok(Self {
+        let mut handler = Self {
             shift: Shift::default(),
             control: Control::default(),
             alt: Alt::default(),
@@ -169,7 +169,10 @@ impl DefaultEventHandler {
             cycle_switch_mode_key,
             all_modes,
             x11_client,
-        })
+        };
+
+        handler.reset()?;
+        Ok(handler)
     }
 
     fn construct_lookup_table(
@@ -470,6 +473,14 @@ impl DefaultEventHandler {
 
     pub fn send_event(&mut self, event: InputEvent) -> std::io::Result<()> {
         self.output_device.emit(&[event])
+    }
+
+    fn reset(&mut self) -> Result<(), Box<dyn Error>> {
+        self.send_modifier(Modifier::Shift, &(KeyState::RELEASED, KeyState::RELEASED))?;
+        self.send_modifier(Modifier::Control, &(KeyState::RELEASED, KeyState::RELEASED))?;
+        self.send_modifier(Modifier::Alt, &(KeyState::RELEASED, KeyState::RELEASED))?;
+        self.send_modifier(Modifier::Windows, &(KeyState::RELEASED, KeyState::RELEASED))?;
+        Ok(())
     }
 }
 
