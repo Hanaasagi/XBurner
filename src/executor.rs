@@ -28,7 +28,7 @@ where
                 // make child new session leader
                 unistd::setsid().expect("Failed to set sid");
                 // change child work dir
-                unistd::chdir("/").expect("Failed to change dir");
+                // unistd::chdir("/").expect("Failed to change dir");
 
                 //nix::unistd::close(0);
                 //nix::unistd::close(1);
