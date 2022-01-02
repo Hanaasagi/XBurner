@@ -6,6 +6,7 @@ use evdev::uinput::VirtualDevice;
 use evdev::EventType;
 use evdev::InputEvent;
 use evdev::Key;
+use lazy_static::lazy_static;
 use log::debug;
 
 use super::EventHandler;
@@ -24,6 +25,10 @@ use crate::NAME;
 const RELEASE: i32 = 0;
 const PRESS: i32 = 1;
 const REPEAT: i32 = 2;
+
+lazy_static! {
+    pub static ref DEFAULT_MODE: String = "".to_string();
+}
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 enum KeyState {
@@ -121,7 +126,7 @@ struct KeyMatchStruct {
     action: Action,
 }
 
-pub struct DefaultEventHandler {
+pub struct DefaultEventHandler<'a> {
     // State
     shift: Shift,
     control: Control,
@@ -129,29 +134,35 @@ pub struct DefaultEventHandler {
     windows: Win,
     output_device: VirtualDevice,
     current_mode: Option<String>,
-    all_modes: Vec<String>,
-    switch_mode_keys: HashMap<KeyCombo, String>,
-    cycle_switch_mode_key: Option<KeyCombo>,
-    lookup_table: HashMap<String, HashMap<KeyCombo, KeyMatchStruct>>,
+    all_modes: Vec<&'a String>,
+    switch_mode_keys: HashMap<&'a KeyCombo, &'a String>,
+    cycle_switch_mode_key: Option<&'a KeyCombo>,
+    lookup_table: HashMap<&'a String, HashMap<&'a KeyCombo, KeyMatchStruct>>,
     x11_client: X11Client,
 }
 
-impl DefaultEventHandler {
-    pub fn new(config: Config) -> Result<Self, Box<dyn std::error::Error>> {
+impl<'a> DefaultEventHandler<'a> {
+    pub fn new(config: &'a Config) -> Result<Self, Box<dyn std::error::Error>> {
         let output_device =
             build_device().map_err(|e| format!("Failed to build an output device: {}", e))?;
 
         // Try to get the default mode
-        let current_mode = config.options.clone().and_then(|x| x.default_mode);
+        let current_mode = config
+            .options
+            .as_ref()
+            .and_then(|x| x.default_mode.as_ref());
 
         // Construct lookup table, O(1) HashMap is more faster for key matching.
-        let (switch_mode_keys, lookup_table) = Self::construct_lookup_table(config.clone());
-        let cycle_switch_mode_key = config.options.and_then(|x| x.mode_switch_key);
+        let (switch_mode_keys, lookup_table) = Self::construct_lookup_table(config);
+        let cycle_switch_mode_key = config
+            .options
+            .as_ref()
+            .and_then(|x| x.mode_switch_key.as_ref());
 
         let mut all_modes = vec![];
-        if let Some(modes) = config.modes {
+        if let Some(modes) = &config.modes {
             for m in modes.keys().into_iter() {
-                all_modes.push(m.to_owned());
+                all_modes.push(m);
             }
         }
 
@@ -163,7 +174,7 @@ impl DefaultEventHandler {
             alt: Alt::default(),
             windows: Win::default(),
             output_device,
-            current_mode,
+            current_mode: current_mode.map(|x| x.to_string()),
             switch_mode_keys,
             lookup_table,
             cycle_switch_mode_key,
@@ -176,21 +187,21 @@ impl DefaultEventHandler {
     }
 
     fn construct_lookup_table(
-        raw_config: Config,
+        raw_config: &'a Config,
     ) -> (
-        HashMap<KeyCombo, String>,
-        HashMap<String, HashMap<KeyCombo, KeyMatchStruct>>,
+        HashMap<&'a KeyCombo, &'a String>,
+        HashMap<&'a String, HashMap<&'a KeyCombo, KeyMatchStruct>>,
     ) {
         let mut res = HashMap::new();
 
-        let mut switch_mode_keys: HashMap<KeyCombo, String> = HashMap::new();
+        let mut switch_mode_keys: HashMap<&KeyCombo, &String> = HashMap::new();
 
         // check if we have modes
-        if let Some(modes) = raw_config.modes {
+        if let Some(modes) = &raw_config.modes {
             for (name, mode) in modes.iter() {
                 // Construct switch mode key
                 if let Some(combo) = &mode.switch_key {
-                    switch_mode_keys.insert(combo.clone(), name.clone());
+                    switch_mode_keys.insert(combo, name);
                 }
 
                 // Construct
@@ -205,7 +216,7 @@ impl DefaultEventHandler {
                 for g in groups.iter() {
                     for kb in g.key_bindings.iter() {
                         kbs.insert(
-                            kb.key_combo.clone(),
+                            &kb.key_combo,
                             KeyMatchStruct {
                                 in_: g.in_.clone().unwrap_or_default(),
                                 not_in: g.not_in.clone().unwrap_or_default(),
@@ -215,14 +226,14 @@ impl DefaultEventHandler {
                     }
                 }
 
-                res.insert(name.clone(), kbs);
+                res.insert(name, kbs);
             }
         } else {
             let mut kbs = HashMap::new();
             for g in raw_config.groups.values() {
                 for kb in g.key_bindings.iter() {
                     kbs.insert(
-                        kb.key_combo.clone(),
+                        &kb.key_combo,
                         KeyMatchStruct {
                             in_: g.in_.clone().unwrap_or_default(),
                             not_in: g.not_in.clone().unwrap_or_default(),
@@ -232,7 +243,7 @@ impl DefaultEventHandler {
                 }
             }
 
-            res.insert(String::default(), kbs);
+            res.insert(&DEFAULT_MODE, kbs);
         }
         (switch_mode_keys, res)
     }
@@ -294,7 +305,7 @@ impl DefaultEventHandler {
         let mut next_mode = None;
         if let Some(current_mode) = &self.current_mode {
             if self.cycle_switch_mode_key.is_some()
-                && key_combo == self.cycle_switch_mode_key.as_ref().unwrap()
+                && &key_combo == self.cycle_switch_mode_key.as_ref().unwrap()
             {
                 let mut flag = false;
                 // Make a cycle
@@ -308,7 +319,7 @@ impl DefaultEventHandler {
                         next_mode = Some(mode.to_string());
                         break;
                     }
-                    if mode == current_mode {
+                    if mode == &current_mode {
                         flag = true;
                     }
                 }
@@ -439,10 +450,10 @@ impl DefaultEventHandler {
         key_combo: &KeyCombo,
     ) -> Result<Option<Action>, Box<dyn std::error::Error>> {
         // Find the action if we are using multi mode
-        let current_mode = self.current_mode.clone().unwrap_or_default();
+        let current_mode = self.current_mode.as_ref().unwrap_or(&DEFAULT_MODE);
         let s = self
             .lookup_table
-            .get(&current_mode)
+            .get(current_mode)
             .and_then(|x| x.get(key_combo));
 
         if s.is_none() {
@@ -484,7 +495,7 @@ impl DefaultEventHandler {
     }
 }
 
-impl EventHandler for DefaultEventHandler {
+impl<'a> EventHandler for DefaultEventHandler<'a> {
     /// Processes the event and execute corresponding action. e.g. Shell, Remap
     fn handle_event(&mut self, event: InputEvent) -> Result<(), Box<dyn Error>> {
         // Just send the event we don't care.

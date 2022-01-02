@@ -119,7 +119,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let config = config::Config::load_from_file(config)?;
 
             let device = device::DeviceManager::get_device(device)?;
-            let event_handler = handler::DefaultEventHandler::new(config)?;
+            let event_handler = handler::DefaultEventHandler::new(&config)?;
 
             let term = Arc::new(AtomicBool::new(false));
             signal_hook::flag::register(signal_hook::consts::SIGINT, Arc::clone(&term))?;

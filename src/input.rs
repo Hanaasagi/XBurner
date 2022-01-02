@@ -13,20 +13,20 @@ use nix::sys::select::FdSet;
 use super::handler::EventHandler;
 
 /// Main EventLoop, receive device events and call the event_handler to process them.
-pub struct EventLoop {
+pub struct EventLoop<'a> {
     /// List of devices to listen to
     input_devices: Vec<Device>,
     /// Callback handler
-    event_handler: Box<dyn EventHandler>,
+    event_handler: Box<dyn EventHandler + 'a>,
     /// Stop Flag
     stop_flag: Arc<AtomicBool>,
     // TODO Reload?
 }
 
-impl EventLoop {
+impl<'a> EventLoop<'a> {
     pub fn new(
         input_devices: Vec<Device>,
-        event_handler: Box<dyn EventHandler>,
+        event_handler: Box<dyn EventHandler + 'a>,
         stop_flag: Arc<AtomicBool>,
     ) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
