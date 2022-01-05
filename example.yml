@@ -127,8 +127,8 @@ groups:
       shell: bspc node -t tiled
       desc: "make window tiled"
     - key: Super-Shift-t
-      shell: bspc node -t pseude_tiled
-      desc: "make window preudo tiled"
+      shell: bspc node -t pseudo_tiled
+      desc: "make window pseudo tiled"
     - key: Super-s
       shell: bspc node -t floating
       desc: "make window floating"
