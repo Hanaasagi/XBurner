@@ -2,6 +2,7 @@ use std::error::Error;
 
 use evdev::uinput::{VirtualDevice, VirtualDeviceBuilder};
 use evdev::{AttributeSet, Key, RelativeAxisType};
+use log::debug;
 
 use crate::NAME;
 
@@ -33,11 +34,16 @@ pub fn build_device() -> Result<VirtualDevice, Box<dyn Error>> {
     }
 
     let mut relative_axes: AttributeSet<RelativeAxisType> = AttributeSet::new();
-    relative_axes.insert(RelativeAxisType::REL_X);
-    relative_axes.insert(RelativeAxisType::REL_Y);
-    relative_axes.insert(RelativeAxisType::REL_HWHEEL);
-    relative_axes.insert(RelativeAxisType::REL_WHEEL);
-    relative_axes.insert(RelativeAxisType::REL_MISC);
+    // REL_{X,Y} must be reported when the mouse moves. BTN_LEFT must be used to report
+    // the primary button press. BTN_{MIDDLE,RIGHT,4,5,etc.} should be used to report
+    // further buttons of the device. REL_WHEEL and REL_HWHEEL should be used to report
+    // scroll wheel events where available.
+    //
+    // relative_axes.insert(RelativeAxisType::REL_X);
+    // relative_axes.insert(RelativeAxisType::REL_Y);
+    // relative_axes.insert(RelativeAxisType::REL_HWHEEL);
+    // relative_axes.insert(RelativeAxisType::REL_WHEEL);
+    // relative_axes.insert(RelativeAxisType::REL_MISC);
 
     let device = VirtualDeviceBuilder::new()?
         .name(NAME)
