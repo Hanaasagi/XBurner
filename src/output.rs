@@ -2,7 +2,6 @@ use std::error::Error;
 
 use evdev::uinput::{VirtualDevice, VirtualDeviceBuilder};
 use evdev::{AttributeSet, Key, RelativeAxisType};
-use log::debug;
 
 use crate::NAME;
 
