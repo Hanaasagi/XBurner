@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::convert::From;
 use std::error::Error;
@@ -138,7 +139,7 @@ pub struct DefaultEventHandler<'a> {
     switch_mode_keys: HashMap<&'a KeyCombo, &'a String>,
     cycle_switch_mode_key: Option<&'a KeyCombo>,
     lookup_table: HashMap<&'a String, HashMap<&'a KeyCombo, KeyMatchStruct>>,
-    x11_client: X11Client,
+    x11_client: RefCell<X11Client>,
 }
 
 impl<'a> DefaultEventHandler<'a> {
@@ -166,7 +167,23 @@ impl<'a> DefaultEventHandler<'a> {
             }
         }
 
-        let x11_client = X11Client::new()?;
+        let x11_client;
+        let mut retry_count = 3;
+        loop {
+            match X11Client::new() {
+                Ok(res) => {
+                    x11_client = res;
+                    break;
+                }
+                Err(e) => {
+                    if retry_count == 0 {
+                        return Err(e);
+                    }
+                }
+            }
+            retry_count -= 1;
+            std::thread::sleep(std::time::Duration::from_millis(100));
+        }
 
         let mut handler = Self {
             shift: Shift::default(),
@@ -179,7 +196,7 @@ impl<'a> DefaultEventHandler<'a> {
             lookup_table,
             cycle_switch_mode_key,
             all_modes,
-            x11_client,
+            x11_client: RefCell::new(x11_client),
         };
 
         handler.reset()?;
@@ -464,7 +481,17 @@ impl<'a> DefaultEventHandler<'a> {
 
         // Check application name only if we have `in` and `notin` field
         if !s.in_.is_empty() || !s.not_in.is_empty() {
-            let wm_class = self.x11_client.get_focus_window_wmclass()?;
+            // Reconnect
+            let wm_class;
+            match self.x11_client.borrow().get_focus_window_wmclass() {
+                Ok(res) => {
+                    wm_class = res;
+                }
+                Err(_) => {
+                    self.x11_client.borrow_mut().reconnect()?;
+                    wm_class = self.x11_client.borrow().get_focus_window_wmclass()?;
+                }
+            }
             let class_name = std::str::from_utf8(wm_class.class())?.to_string();
             if !s.in_.is_empty() && !s.in_.contains(&class_name) {
                 return Ok(None);
