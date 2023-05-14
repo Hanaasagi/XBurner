@@ -75,6 +75,39 @@ Timestamp: 1640964235146         PRESS          Kind: Key(KEY_A)
 aTimestamp: 1640964235226        RELEASE        Kind: Key(KEY_A)
 ```
 
+
+#### Start via systemd
+
+Systemd Unit File
+
+```
+[Unit]
+Description=xburner
+
+[Service]
+Type=simple
+KillMode=process
+WorkingDirectory=<YOUR HOME>
+ExecStart=/usr/bin/XBurner run --config <CONFIG_PATH> --device <YOUR DEVICE NAME>
+Restart=on-failure
+RestartSec=3
+
+# Maybe needed
+Environment=DISPLAY=:0
+Environment=RUST_BACKTRACE=1
+
+
+[Install]
+WantedBy=default.target
+```
+
+Because a process inherits the cgroup information from its parent process.
+when you use xburner to execute shell commands, it will be in the same cgroup as xburner.
+This is not a problem if you have no resource limitations on the process.
+If you need to limit resources, you can use `systemd-run` to execute the shell.
+For example, `systemd-run --slice <YOUR SLICE> --unit <UNIT NAME> --scope --user <SHELL_COMMAND>`.
+
+
 ## License
 
 GNU General Public License v3.0
