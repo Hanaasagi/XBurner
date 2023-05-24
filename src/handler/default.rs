@@ -482,14 +482,15 @@ impl<'a> DefaultEventHandler<'a> {
         // Check application name only if we have `in` and `notin` field
         if !s.in_.is_empty() || !s.not_in.is_empty() {
             // Reconnect
+            let mut x11_client = self.x11_client.borrow_mut();
             let wm_class;
-            match self.x11_client.borrow().get_focus_window_wmclass() {
+            match x11_client.get_focus_window_wmclass() {
                 Ok(res) => {
                     wm_class = res;
                 }
                 Err(_) => {
-                    self.x11_client.borrow_mut().reconnect()?;
-                    wm_class = self.x11_client.borrow().get_focus_window_wmclass()?;
+                    x11_client.reconnect()?;
+                    wm_class = x11_client.get_focus_window_wmclass()?;
                 }
             }
             let class_name = std::str::from_utf8(wm_class.class())?.to_string();
