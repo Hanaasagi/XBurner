@@ -3,6 +3,7 @@
 # A multi-mode, rule-based keyboard customizer
 
 ## Features
+
 - Key Remapping
 - Execute command
 
@@ -13,6 +14,7 @@ $ git clone https://github.com/Hanaasagi/XBurner
 $ cd XBurner
 $ cargo install --path .
 ```
+
 ## Usage
 
 ```
@@ -64,8 +66,7 @@ Available devices:
 /dev/input/event16  : XBurner
 ```
 
-
-#### How to know key name? 
+#### How to know key name?
 
 Just run `XBurner echo --device <your device path>` and press keyboard.
 
@@ -75,6 +76,12 @@ Timestamp: 1640964235146         PRESS          Kind: Key(KEY_A)
 aTimestamp: 1640964235226        RELEASE        Kind: Key(KEY_A)
 ```
 
+#### Non-root privileges
+
+```
+sudo gpasswd -a $USER input
+echo 'KERNEL=="uinput", NAME="input/%k", MODE="660", GROUP="input", TAG+="uaccess"' >> /etc/udev/rules.d/input.rules
+```
 
 #### Start via systemd
 
@@ -106,7 +113,6 @@ when you use xburner to execute shell commands, it will be in the same cgroup as
 This is not a problem if you have no resource limitations on the process.
 If you need to limit resources, you can use `systemd-run` to execute the shell.
 For example, `systemd-run --slice <YOUR SLICE> --unit <UNIT NAME> --scope --user <SHELL_COMMAND>`.
-
 
 ## License
 
