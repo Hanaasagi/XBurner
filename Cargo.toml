@@ -10,15 +10,14 @@ description = "Advanced Keyboard Manager"
 clap = { version = "3.2.25", features = ["derive"] }
 env_logger = "0.10.0"
 evdev = "0.12.1"
-indexmap = { version = "1.9.3", features = ["serde"] }
+indexmap = { version = "2.0.0", features = ["serde"] }
 lazy_static = "1.4.0"
-libc = "0.2.144"
-log = "0.4.17"
+libc = "0.2.147"
+log = "0.4.19"
 nix = "0.26.2"
 notify-rust = "4.8.0"
 serde = {vesion = "1.0.136", features = ["derive"] }
-serde_yaml = "0.9.21"
-signal-hook = "0.3.15"
+serde_yaml = "0.9.25"
+signal-hook = "0.3.17"
 termcolor = "1.2.0"
-x11rb = "0.11.1"
-
+x11rb = "0.12.0"
