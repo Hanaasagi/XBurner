@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::os::fd::BorrowedFd;
 use std::os::unix::io::AsRawFd;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
@@ -36,25 +37,6 @@ impl<'a> EventLoop<'a> {
         })
     }
 
-    fn select_readable_devices(&self) -> Result<FdSet, Box<dyn Error>> {
-        let mut read_fds = FdSet::new();
-        for device in self.input_devices.iter() {
-            read_fds.insert(device.as_raw_fd());
-        }
-
-        // `select` is a slow syscall, it will return when we receive a signal.
-        // If error is `EINTR`, we need to retry.
-        loop {
-            let res = select(None, &mut read_fds, None, None, None);
-            if let Some(err) = res.err() {
-                if err == Errno::EINTR {
-                    continue;
-                }
-            }
-            return Ok(read_fds);
-        }
-    }
-
     fn grab_devices(&mut self) -> Result<(), Box<dyn Error>> {
         for device in self.input_devices.iter_mut() {
             device.grab()?
@@ -64,8 +46,24 @@ impl<'a> EventLoop<'a> {
 
     pub fn run(&mut self) -> Result<(), Box<dyn Error>> {
         self.grab_devices()?;
+
+        let mut read_fds = FdSet::new();
+        for device in self.input_devices.iter() {
+            let raw_fd = device.as_raw_fd();
+            let fd = Box::new(unsafe { BorrowedFd::borrow_raw(raw_fd) });
+            read_fds.insert(Box::leak(fd));
+        }
+
         loop {
-            let select_res = self.select_readable_devices();
+            // `select` is a slow syscall, it will return when we receive a signal.
+            // If error is `EINTR`, we need to retry.
+            let res = select(None, &mut read_fds, None, None, None);
+            if let Some(err) = res.err() {
+                if err == Errno::EINTR {
+                    continue;
+                }
+            }
+            // let select_res = self.select_readable_devices();
 
             // Check if it needs to stop, the current implementation is very simple.
             // Known problems is that we need to press any key to stop after SIGINT.
@@ -78,9 +76,11 @@ impl<'a> EventLoop<'a> {
                 return Ok(());
             }
 
-            let readable_fds = select_res.unwrap();
+            let readable_fds = read_fds;
             for input_device in self.input_devices.iter_mut() {
-                if !readable_fds.contains(input_device.as_raw_fd()) {
+                if !readable_fds
+                    .contains(unsafe { &BorrowedFd::borrow_raw(input_device.as_raw_fd()) })
+                {
                     continue;
                 }
                 for event in input_device.fetch_events()? {
