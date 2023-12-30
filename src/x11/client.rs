@@ -23,7 +23,10 @@ impl X11Client {
         let res = self.conn.get_input_focus()?.reply()?;
         let window = res.focus;
         let wm_class = WmClass::get(&self.conn, window)?.reply()?;
-        Ok(wm_class)
+        if wm_class.is_none() {
+            return Err("No WM_CLASS".into());
+        }
+        Ok(wm_class.unwrap())
     }
 
     pub fn reconnect(&mut self) -> Result<(), Box<dyn error::Error>> {
