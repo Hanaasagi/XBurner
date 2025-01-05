@@ -67,6 +67,7 @@ pub struct KeyBinding {
     pub key_combo: KeyCombo,
     pub shell: Option<String>,
     pub remap: Option<KeyCombo>,
+    #[allow(dead_code)]
     pub desc: Option<String>,
 }
 
@@ -108,6 +109,7 @@ pub struct Options {
 #[serde(deny_unknown_fields)]
 pub struct Config {
     #[serde(default, deserialize_with = "parse_modmap")]
+    #[allow(dead_code)]
     pub modmap: Option<HashMap<Key, Key>>,
     pub modes: Option<IndexMap<String, Mode>>,
     pub groups: IndexMap<String, Group>,

@@ -13,7 +13,7 @@ mod output;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 
-use clap::{AppSettings, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 use evdev::Device as EDevice;
 
 // Package meta info
@@ -25,42 +25,49 @@ const NAME: &str = env!("CARGO_PKG_NAME");
 #[derive(Subcommand)]
 enum Commands {
     // TODO install uninstall stop service edit ...
+    /// Run the main application
     Run {
         /// Configuration file path
-        #[clap(short, long)]
+        #[arg(short, long)]
         config: String,
-        #[clap(short, long)]
+
         /// Keyboard devices to grab
+        #[arg(short, long)]
         device: String,
     },
-    /// List devices infomation of this computer
+
+    /// List devices information of this computer
     ListDevice {},
+
     /// List supported keys reported by the device
     ListKeys {
         /// Device path
-        #[clap(short, long)]
+        #[arg(short, long)]
         device: String,
     },
-    /// Echo key infomation that you typed
+
+    /// Echo key information that you typed
     Echo {
         /// Keyboard devices to grab
-        #[clap(short, long)]
+        #[arg(short, long)]
         device: String,
     },
 }
 
 #[derive(Parser)]
-#[clap(about, version, author)]
-#[clap(global_setting(AppSettings::PropagateVersion))]
-#[clap(global_setting(AppSettings::UseLongFormatForHelpSubcommand))]
-#[clap(setting(AppSettings::SubcommandRequiredElseHelp))]
+#[command(about, version, author)]
+#[command(arg_required_else_help = true)]
 struct Args {
-    #[clap(subcommand)]
+    /// Specify the subcommand to run
+    #[command(subcommand)]
     command: Commands,
-    #[clap(short, long)]
+
+    /// Enable verbose mode
+    #[arg(short, long)]
     verbose: bool,
+
     /// Suppress output of all key events
-    #[clap(long)]
+    #[arg(long)]
     silent: bool,
 }
 
@@ -115,7 +122,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             event_loop.run()?;
         }
         Commands::Run { config, device } => {
-            // load user config
+            // Load user config
             let config = config::Config::load_from_file(config)?;
 
             let device = device::DeviceManager::get_device(device)?;
@@ -126,7 +133,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut event_loop =
                 input::EventLoop::new(vec![device], Box::new(event_handler), term)?;
 
-            // Send start notify, slient if we meet error.
+            // Send start notification, silent if we meet error.
             notification::send_notify(
                 NAME,
                 &format!("{} is running now, your keyboard is grabbed.", NAME),

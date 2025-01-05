@@ -50,8 +50,9 @@ impl<'a> EventLoop<'a> {
         let mut read_fds = FdSet::new();
         for device in self.input_devices.iter() {
             let raw_fd = device.as_raw_fd();
-            let fd = Box::new(unsafe { BorrowedFd::borrow_raw(raw_fd) });
-            read_fds.insert(Box::leak(fd));
+            // let fd = Box::new(unsafe { BorrowedFd::borrow_raw(raw_fd) });
+            // read_fds.insert(Box::leak(fd));
+            read_fds.insert(unsafe { BorrowedFd::borrow_raw(raw_fd) });
         }
 
         loop {
@@ -79,7 +80,7 @@ impl<'a> EventLoop<'a> {
             let readable_fds = read_fds;
             for input_device in self.input_devices.iter_mut() {
                 if !readable_fds
-                    .contains(unsafe { &BorrowedFd::borrow_raw(input_device.as_raw_fd()) })
+                    .contains(unsafe { BorrowedFd::borrow_raw(input_device.as_raw_fd()) })
                 {
                     continue;
                 }

@@ -32,7 +32,7 @@ pub fn build_device() -> Result<VirtualDevice, Box<dyn Error>> {
         }
     }
 
-    let mut relative_axes: AttributeSet<RelativeAxisType> = AttributeSet::new();
+    let relative_axes: AttributeSet<RelativeAxisType> = AttributeSet::new();
     // REL_{X,Y} must be reported when the mouse moves. BTN_LEFT must be used to report
     // the primary button press. BTN_{MIDDLE,RIGHT,4,5,etc.} should be used to report
     // further buttons of the device. REL_WHEEL and REL_HWHEEL should be used to report
