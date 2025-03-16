@@ -1,8 +1,8 @@
 use std::time::UNIX_EPOCH;
 
-use evdev::uinput::VirtualDevice;
 use evdev::EventType;
 use evdev::InputEvent;
+use evdev::uinput::VirtualDevice;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 use super::EventHandler;
@@ -44,13 +44,13 @@ impl EventHandler for EchoEventHandler {
             println!(
                 "Timestamp: {:>12}\t PRESS   \tKind: {:?}",
                 timestamp.as_millis(),
-                event.kind()
+                event.destructure()
             );
         } else if event.value() == 0 {
             println!(
                 "Timestamp: {:>12}\t RELEASE \tKind: {:?}",
                 timestamp.as_millis(),
-                event.kind()
+                event.destructure()
             );
         } else {
             // ?

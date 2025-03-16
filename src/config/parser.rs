@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 
-use evdev::Key;
-use serde::de::{value, Error, MapAccess, SeqAccess, Visitor};
+use evdev::KeyCode as Key;
+use serde::de::{Error, MapAccess, SeqAccess, Visitor, value};
 use serde::{Deserialize, Deserializer};
 
 use super::config::KeyCombo;

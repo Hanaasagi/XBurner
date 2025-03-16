@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fs;
 
-use evdev::Key;
+use evdev::KeyCode as Key;
 use indexmap::IndexMap;
 use serde;
 use serde::de::{Error, Visitor};

@@ -1,15 +1,15 @@
 use std::error::Error;
 use std::os::fd::BorrowedFd;
 use std::os::unix::io::AsRawFd;
+use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
-use std::sync::Arc;
 
 use evdev::Device;
 use log::info;
 use nix::errno::Errno;
-use nix::sys::select::select;
 use nix::sys::select::FdSet;
+use nix::sys::select::select;
 
 use super::handler::EventHandler;
 

@@ -10,8 +10,8 @@ mod input;
 mod keycode;
 mod notification;
 mod output;
-use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 
 use clap::{Parser, Subcommand};
 use evdev::Device as EDevice;

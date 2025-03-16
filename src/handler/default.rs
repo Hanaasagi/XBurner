@@ -3,14 +3,15 @@ use std::collections::HashMap;
 use std::convert::From;
 use std::error::Error;
 
-use evdev::uinput::VirtualDevice;
 use evdev::EventType;
 use evdev::InputEvent;
-use evdev::Key;
+use evdev::KeyCode as Key;
+use evdev::uinput::VirtualDevice;
 use lazy_static::lazy_static;
 use log::debug;
 
 use super::EventHandler;
+use crate::NAME;
 use crate::config::Action;
 use crate::config::Config;
 use crate::config::KeyCombo;
@@ -20,7 +21,6 @@ use crate::keycode::*;
 use crate::notification::send_notify;
 use crate::output::build_device;
 use crate::x11::X11Client;
-use crate::NAME;
 
 // The value of InputEvent
 const RELEASE: i32 = 0;
@@ -232,14 +232,11 @@ impl<'a> DefaultEventHandler<'a> {
                 let mut kbs = HashMap::new();
                 for g in groups.iter() {
                     for kb in g.key_bindings.iter() {
-                        kbs.insert(
-                            &kb.key_combo,
-                            KeyMatchStruct {
-                                in_: g.in_.clone().unwrap_or_default(),
-                                not_in: g.not_in.clone().unwrap_or_default(),
-                                action: kb.get_action(),
-                            },
-                        );
+                        kbs.insert(&kb.key_combo, KeyMatchStruct {
+                            in_: g.in_.clone().unwrap_or_default(),
+                            not_in: g.not_in.clone().unwrap_or_default(),
+                            action: kb.get_action(),
+                        });
                     }
                 }
 
@@ -249,14 +246,11 @@ impl<'a> DefaultEventHandler<'a> {
             let mut kbs = HashMap::new();
             for g in raw_config.groups.values() {
                 for kb in g.key_bindings.iter() {
-                    kbs.insert(
-                        &kb.key_combo,
-                        KeyMatchStruct {
-                            in_: g.in_.clone().unwrap_or_default(),
-                            not_in: g.not_in.clone().unwrap_or_default(),
-                            action: kb.get_action(),
-                        },
-                    );
+                    kbs.insert(&kb.key_combo, KeyMatchStruct {
+                        in_: g.in_.clone().unwrap_or_default(),
+                        not_in: g.not_in.clone().unwrap_or_default(),
+                        action: kb.get_action(),
+                    });
                 }
             }
 
@@ -506,7 +500,7 @@ impl<'a> DefaultEventHandler<'a> {
     }
 
     fn send_key(&mut self, key: &Key, value: i32) -> std::io::Result<()> {
-        let event = InputEvent::new(EventType::KEY, key.code(), value);
+        let event = InputEvent::new(EventType::KEY.0, key.code(), value);
         self.send_event(event)
     }
 
