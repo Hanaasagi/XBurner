@@ -232,11 +232,14 @@ impl<'a> DefaultEventHandler<'a> {
                 let mut kbs = HashMap::new();
                 for g in groups.iter() {
                     for kb in g.key_bindings.iter() {
-                        kbs.insert(&kb.key_combo, KeyMatchStruct {
-                            in_: g.in_.clone().unwrap_or_default(),
-                            not_in: g.not_in.clone().unwrap_or_default(),
-                            action: kb.get_action(),
-                        });
+                        kbs.insert(
+                            &kb.key_combo,
+                            KeyMatchStruct {
+                                in_: g.in_.clone().unwrap_or_default(),
+                                not_in: g.not_in.clone().unwrap_or_default(),
+                                action: kb.get_action(),
+                            },
+                        );
                     }
                 }
 
@@ -246,11 +249,14 @@ impl<'a> DefaultEventHandler<'a> {
             let mut kbs = HashMap::new();
             for g in raw_config.groups.values() {
                 for kb in g.key_bindings.iter() {
-                    kbs.insert(&kb.key_combo, KeyMatchStruct {
-                        in_: g.in_.clone().unwrap_or_default(),
-                        not_in: g.not_in.clone().unwrap_or_default(),
-                        action: kb.get_action(),
-                    });
+                    kbs.insert(
+                        &kb.key_combo,
+                        KeyMatchStruct {
+                            in_: g.in_.clone().unwrap_or_default(),
+                            not_in: g.not_in.clone().unwrap_or_default(),
+                            action: kb.get_action(),
+                        },
+                    );
                 }
             }
 
