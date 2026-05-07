@@ -8,7 +8,7 @@ use evdev::InputEvent;
 use evdev::KeyCode as Key;
 use evdev::uinput::VirtualDevice;
 use lazy_static::lazy_static;
-use log::debug;
+use log::{debug, warn};
 
 use super::EventHandler;
 use crate::NAME;
@@ -483,17 +483,14 @@ impl<'a> DefaultEventHandler<'a> {
         if !s.in_.is_empty() || !s.not_in.is_empty() {
             // Reconnect
             let mut x11_client = self.x11_client.borrow_mut();
-            let wm_class;
-            match x11_client.get_focus_window_wmclass() {
-                Ok(res) => {
-                    wm_class = res;
+            let wm_class = match x11_client.get_focus_window_wmclass() {
+                Ok(res) => res,
+                Err(e) => {
+                    warn!("Failed to get focus window WM_CLASS: {}, passing key through", e);
+                    return Ok(None);
                 }
-                Err(_) => {
-                    x11_client.reconnect()?;
-                    wm_class = x11_client.get_focus_window_wmclass()?;
-                }
-            }
-            let class_name = std::str::from_utf8(wm_class.class())?.to_string();
+            };
+            let class_name = String::from_utf8_lossy(wm_class.class()).to_string();
             if !s.in_.is_empty() && !s.in_.contains(&class_name) {
                 return Ok(None);
             }
